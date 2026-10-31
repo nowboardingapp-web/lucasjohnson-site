@@ -1,0 +1,8 @@
+{
+  // Static site served by Cloudflare Workers. Everything in public/ is published as-is.
+  "name": "lucasjohnson-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public"
+  }
+}
