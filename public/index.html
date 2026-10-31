@@ -61,7 +61,11 @@ p{margin:0}
 .app>div{min-width:0}
 .icon{width:clamp(76px,16vw,104px);height:auto;aspect-ratio:1/1;object-fit:cover;flex-shrink:0;justify-self:start;max-width:100%;border-radius:23%;display:block;
   box-shadow:0 1px 0 rgba(0,0,0,.06),0 8px 20px -10px rgba(0,0,0,.35)}
+.app{position:relative;cursor:pointer}
 .app h2 a{text-decoration:none}
+.app h2 a::after{content:"";position:absolute;inset:0;border-radius:22px}
+.app h2 a:focus-visible{outline:none}.app:has(h2 a:focus-visible){outline:2px solid var(--focus);outline-offset:3px}
+.app .links a,.app .links .store{position:relative;z-index:1}
 .app .tag{margin-top:6px;color:var(--muted)}
 .facts{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 18px;padding:0;list-style:none}
 .facts li{font:500 .76rem/1 var(--mono);padding:7px 10px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
