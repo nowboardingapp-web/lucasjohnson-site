@@ -46,7 +46,7 @@ p{margin:0}
 .mark{display:flex;align-items:center;gap:10px;text-decoration:none;font:600 1.05rem/1 var(--display)}
 .mark i{width:22px;height:22px;border-radius:7px;background:var(--ink);display:grid;place-items:center}
 .mark i::after{content:"";width:9px;height:9px;border-radius:3px;background:var(--bg)}
-.top nav{display:flex;gap:18px;font-size:.95rem}
+.top nav{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem}
 .top nav a{text-decoration:none;color:var(--muted)}
 .top nav a:hover,.top nav a[aria-current]{color:var(--ink)}
 
@@ -107,7 +107,7 @@ footer a{color:var(--muted)}
 @media (max-width:30rem){.app{grid-template-columns:1fr}.store{font-size:.88rem;padding:9px 12px}.spec{grid-template-columns:1fr;gap:2px 0}.spec dd{margin-bottom:10px}}
 @media (prefers-reduced-motion:no-preference){.app{transition:border-color .2s}.app:hover{border-color:var(--muted)}}
 </style>
-<div class="wrap"><header class="top"><a class="mark" href="index.html"><i aria-hidden="true"></i>Lucas Johnson</a><nav aria-label="Site"><a href="index.html" aria-current="page">Apps</a><a href="hingeworthy/index.html">Hingeworthy</a><a href="now-boarding/index.html">Now Boarding</a></nav></header><main><div class="intro">
+<div class="wrap"><header class="top"><a class="mark" href="index.html"><i aria-hidden="true"></i>Lucas Johnson</a><nav aria-label="Site"><a href="index.html" aria-current="page">Apps</a><a href="hingeworthy/index.html">Hingeworthy</a><a href="now-boarding/index.html">Now Boarding</a><a href="request/index.html">Requests</a></nav></header><main><div class="intro">
   <p class="label">Independent iOS apps</p>
   <h1>Small, focused apps for iPhone, built by one person.</h1>
   <p>I'm Lucas Johnson. I make apps that each do one job well, with no accounts and as little data as possible.</p>
@@ -132,6 +132,7 @@ footer a{color:var(--muted)}
 <section aria-labelledby="c">
   <h2 id="c">Get in touch</h2>
   <p class="muted">Questions, bug reports and ideas for any of my apps all come to the same inbox.</p>
+  <p class="muted">Have an idea for a feature or a new app? <a href="request/index.html">Send a request</a>.</p>
   <div class="contact"><span class="email" id="email-home">support@lucasjohnson.app</span><button class="copy" type="button" data-copy="support@lucasjohnson.app" aria-controls="email-home">Copy</button></div>
 </section></main><footer><span>&copy; 2026 Lucas Johnson</span><nav><a href="hingeworthy/privacy.html">Hingeworthy privacy</a><a href="now-boarding/privacy.html">Now Boarding privacy</a></nav></footer></div><script>
 document.querySelectorAll('button.copy').forEach(function(b){
