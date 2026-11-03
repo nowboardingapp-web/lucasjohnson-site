@@ -94,6 +94,10 @@ details{border:1px solid var(--line);border-radius:14px;background:var(--surface
 details summary{cursor:pointer;padding:14px 16px;font-weight:700;list-style-position:inside}
 details>div{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
 .steps{margin:0;padding-left:1.3rem;display:flex;flex-direction:column;gap:6px}
+.cta-row{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:12px;font-weight:700;text-decoration:none;background:var(--hinge);color:var(--surface)}
+.btn:hover{filter:brightness(1.08)}
+.btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 
 /* screenshot strip */
 .shots{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;margin:0 -2px;list-style:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
@@ -145,20 +149,26 @@ footer a{color:var(--muted)}
 <section aria-labelledby="s"><h2 id="s">Support</h2>
 <details open><summary>Set up background counting</summary><div>
   <p>iOS only lets apps read the hinge while they're on screen. Shortcuts can tell Hingeworthy each time you open or close your phone, so it keeps counting when the app is closed.</p>
+  <p>Make sure Hingeworthy is installed, then open these on your iPhone Duo and tap <b>Add Shortcut</b> for each:</p>
+  <p class="cta-row">
+    <a class="btn" href="https://www.icloud.com/shortcuts/f8de2bac85734b329aeb5c2e5915e75c">Add Log Duo Opened</a>
+    <a class="btn" href="https://www.icloud.com/shortcuts/7c42b9b2646f411fb25ff4cfb61b535c">Add Log Duo Closed</a>
+  </p>
+  <p>Then open <b>Shortcuts › Library › Automation</b> and switch both automations on. That's it.</p>
+  <p>Prefer to build them yourself? Hingeworthy has a step-by-step guide with a short clip for every tap under <b>Settings › Background counting</b>. The steps are:</p>
   <ol class="steps">
-    <li>Open <b>Shortcuts</b>, tap <b>Automation</b>, then <b>+</b>.</li>
-    <li>Choose <b>Opened or Closed</b>, select <b>Opened</b> only, and choose <b>Run Immediately</b>.</li>
-    <li>Tap <b>Next</b>, search for <b>Hingeworthy</b>, and pick <b>Log Duo Opened</b>.</li>
-    <li>Repeat with <b>Closed</b> and <b>Log Duo Closed</b>.</li>
-    <li>Turn off <b>Notify When Run</b> on both so you don't get a banner each time.</li>
+    <li>In Shortcuts, go to <b>All Shortcuts</b> and tap <b>+</b>. Tap <b>✕</b> to close the "What do you want your shortcut to do?" box.</li>
+    <li>Tap <b>Search</b>, type <b>Opened</b>, and under <b>Automation</b> tap <b>Opened or Closed</b>.</li>
+    <li>Search <b>Opened</b> again and tap <b>Log Duo Opened</b>. Tap <b>‹</b> to save.</li>
+    <li>Tap <b>+</b> again and close the box. Search <b>Closed</b> and add <b>Opened or Closed</b>, then tap the blue <b>Opened</b> and choose <b>Closed</b>.</li>
+    <li>Search <b>Closed</b>, tap <b>Log Duo Closed</b>, and tap <b>‹</b> to save.</li>
   </ol>
-  <p>Open Hingeworthy and go to <b>Settings › Background counting</b>. It turns green once an automation has run.</p>
 </div></details>
 <details><summary>Why doesn't the widget show the hinge angle?</summary><div>
   <p>Widgets can only update when the app or Shortcuts gives them new data, and neither can read the angle while the app is closed. The angle is always live inside the app.</p>
 </div></details>
 <details><summary>My count seems low</summary><div>
-  <p>Without the Shortcuts automations, Hingeworthy only counts while it's open. Set up background counting above, then check that both automations are set to <b>Run Immediately</b>.</p>
+  <p>Without the Shortcuts automations, Hingeworthy only counts while it's open. Set up background counting above, then check that both automations are switched on in <b>Shortcuts › Library › Automation</b>.</p>
 </div></details>
 <details><summary>Can I export or reset my stats?</summary><div>
   <p>Yes. Go to <b>Settings</b> and choose <b>Export history (CSV)</b> or <b>Reset all stats</b>. Resetting can't be undone.</p>
