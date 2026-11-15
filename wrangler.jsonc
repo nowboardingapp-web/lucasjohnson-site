@@ -1,8 +1,16 @@
 {
   // Static site served by Cloudflare Workers. Everything in public/ is published as-is.
+  // src/worker.js only runs for the daily stats email (and requests that don't match a file).
   "name": "lucasjohnson-site",
   "compatibility_date": "2026-10-01",
+  "main": "src/worker.js",
   "assets": {
-    "directory": "./public"
-  }
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  // Every day at 12:05 UTC (7:05 AM Eastern in winter, 8:05 AM in summer)
+  "triggers": { "crons": ["5 12 * * *"] },
+  "send_email": [{ "name": "EMAIL" }],
+  // Keep text settings set in the Cloudflare dashboard when deploying
+  "keep_vars": true
 }
