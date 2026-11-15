@@ -11,6 +11,7 @@
   // Every day at 12:05 UTC (7:05 AM Eastern in winter, 8:05 AM in summer)
   "triggers": { "crons": ["5 12 * * *"] },
   "send_email": [{ "name": "EMAIL" }],
+  "vars": { "CF_ACCOUNT_ID": "ef90086c4c744109592a5f6b7e17730b" },
   // Keep text settings set in the Cloudflare dashboard when deploying
   "keep_vars": true
 }

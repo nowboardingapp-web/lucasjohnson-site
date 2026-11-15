@@ -5,7 +5,7 @@
 //
 // Settings (Cloudflare dashboard › Workers & Pages › lucasjohnson-site › Settings › Variables and Secrets):
 //   CF_API_TOKEN   (secret)  API token with "Account Analytics: Read"
-//   CF_ACCOUNT_ID  (text)    your Cloudflare account ID
+//   CF_ACCOUNT_ID  (text)    your Cloudflare account ID (set in wrangler.jsonc)
 //   CF_SITE_TAG    (text)    the Web Analytics site tag for lucasjohnson.app
 //   STATS_TO       (text)    where to send the email (must be a verified Email Routing destination)
 //   STATS_FROM     (text)    optional, defaults to stats@lucasjohnson.app
