@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Keep this page out of search engines -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#18212b">
+<title>Lane Scorekeeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#18212b; --panel:#222e3a; --panel2:#2a3846; --line:#3a4958;
+  --cream:#f4ead8; --muted:#9fb0bf; --ink:#1b232c;
+  --rust:#c8622e; --rust2:#e3793f; --pine:#3f7254; --pine2:#4f8d68; --sky:#8db4cc;
+  --gold:#f2c14e; --red:#d9534f;
+  --head:'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --body:'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--cream);font-family:var(--body);font-weight:700}
+body{background:radial-gradient(1200px 600px at 50% -200px,#2b3b4b 0%,var(--bg) 70%) fixed;padding-bottom:env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.35;cursor:default}
+h1,h2,h3{font-family:var(--head);font-weight:400;letter-spacing:.5px;margin:0}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 40px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:5;background:rgba(24,33,43,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top))}
+.top .in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.brand img{height:40px;width:auto}
+.brand b{font-family:var(--head);font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{background:var(--panel2);border:1px solid var(--line);padding:9px 14px;border-radius:999px;font-weight:800;font-size:15px;white-space:nowrap}
+.chip.lane{background:var(--rust);border-color:var(--rust)}
+.chip.warn{background:var(--red);border-color:var(--red)}
+
+/* generic */
+.title{font-size:34px;margin:10px 0 4px}
+.sub{color:var(--muted);margin:0 0 18px;font-size:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 22px;border-radius:14px;font-weight:900;font-size:18px;background:var(--panel2);border:1px solid var(--line)}
+.btn.primary{background:var(--rust);border-color:var(--rust)}
+.btn.good{background:var(--pine);border-color:var(--pine2)}
+.btn.bad{background:#6b2f2c;border-color:var(--red)}
+.btn.big{width:100%;padding:20px;font-size:22px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1}
+
+/* lanes */
+.lanes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.lanebtn{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:22px 14px;text-align:center}
+.lanebtn .n{font-family:var(--head);font-size:44px;line-height:1}
+.lanebtn .s{color:var(--muted);font-size:14px;margin-top:6px;min-height:19px}
+.lanebtn.busy{border-color:var(--rust)}
+.lanebtn.busy .s{color:var(--rust2)}
+
+/* games list */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.gamebtn{text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.gamebtn:active{border-color:var(--rust)}
+.gamebtn h3{font-size:26px}
+.gamebtn p{margin:0;color:var(--muted);font-size:15px}
+.gamebtn .tag{align-self:flex-start;font-size:12px;background:var(--panel2);padding:4px 10px;border-radius:999px;color:var(--sky)}
+
+/* setup */
+.rules{margin:0;padding-left:22px;font-size:18px;line-height:1.5}
+.rules li{margin:6px 0}
+.lbl{font-family:var(--head);font-size:20px;margin:22px 0 10px;color:var(--sky)}
+.plist{display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;gap:8px}
+.prow input{flex:1;min-width:0;background:var(--bg);border:2px solid var(--line);color:var(--cream);border-radius:12px;padding:14px;font:inherit;font-size:18px}
+.prow input:focus{outline:none;border-color:var(--rust)}
+.prow .x{width:54px;border-radius:12px;background:var(--panel2);font-size:22px}
+.toggle{display:flex;align-items:center;gap:12px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:17px;text-align:left;width:100%}
+.sw{width:52px;height:30px;border-radius:999px;background:#475766;position:relative;flex:none;transition:.2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on .sw{background:var(--pine2)}
+.toggle.on .sw::after{left:25px}
+
+/* play */
+.playhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 14px}
+.playhead h2{font-size:28px}
+.turn{font-size:20px;text-align:center;margin:0 0 12px}
+.turn b{color:var(--gold)}
+.msg{text-align:center;color:var(--gold);min-height:24px;margin:8px 0 0;font-size:17px}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.pad button{height:76px;border-radius:16px;background:var(--cream);color:var(--ink);font-family:var(--head);font-size:34px;box-shadow:0 4px 0 #b9ab92}
+.pad button:active{transform:translateY(3px);box-shadow:0 1px 0 #b9ab92}
+.pad button.miss{background:#55606b;color:#fff;box-shadow:0 4px 0 #333d47;font-size:24px}
+.pad button.ks{background:var(--rust);color:#fff;box-shadow:0 4px 0 #8a3f18;font-size:22px;grid-column:span 2}
+.pad button small{display:block;font-family:var(--body);font-size:12px;font-weight:800;opacity:.8;margin-top:-2px}
+@media (min-width:640px){.pad{grid-template-columns:repeat(8,1fr)}.pad button.ks{grid-column:span 2}}
+.actions{display:flex;gap:10px;margin-top:16px}
+.actions .btn{flex:1;padding:14px;font-size:16px}
+
+/* scoreboards */
+.board{width:100%;border-collapse:separate;border-spacing:0 8px}
+.board td{padding:0}
+.sb{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;width:100%;text-align:left}
+.sb.cur{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,193,78,.15)}
+.sb.out{opacity:.4}
+.sb .nm{font-size:19px;font-weight:900;min-width:90px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb .tot{font-family:var(--head);font-size:32px;margin-left:auto;min-width:56px;text-align:right}
+.boxes{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;flex:1}
+.boxes span{aspect-ratio:1;max-height:40px;border-radius:7px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:18px}
+.boxes span.k{background:var(--rust);border-color:var(--rust)}
+@media (max-width:560px){.sb.std{flex-wrap:wrap}.sb.std .boxes{order:3;flex-basis:100%}}
+
+.letters{display:flex;gap:6px}
+.letters span{width:38px;height:42px;border-radius:9px;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:24px;color:#4a5967}
+.letters span.on{border:2px solid var(--red);background:var(--red);color:#fff}
+
+.big21{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.t21{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:16px;text-align:center}
+.t21.cur{border-color:var(--gold)}
+.t21 .nm{font-size:18px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t21 .v{font-family:var(--head);font-size:64px;line-height:1.05}
+.t21 .need{color:var(--muted);font-size:14px}
+.bar{height:8px;background:var(--bg);border-radius:9px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--pine2)}
+
+.ttt{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;margin:0 auto}
+.ttt button{aspect-ratio:1;border-radius:18px;background:var(--cream);color:var(--ink);font-family:var(--head);font-size:44px;position:relative;box-shadow:0 4px 0 #b9ab92}
+.ttt button.p0{background:var(--rust);color:#fff;box-shadow:0 4px 0 #8a3f18}
+.ttt button.p1{background:var(--sky);color:var(--ink);box-shadow:0 4px 0 #5d8197}
+.ttt button.won{outline:5px solid var(--gold)}
+.ttt button small{position:absolute;bottom:8px;left:0;right:0;font-family:var(--body);font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.legend{display:flex;justify-content:center;gap:12px;margin:0 0 14px;flex-wrap:wrap}
+.legend span{padding:8px 14px;border-radius:999px;font-weight:900;border:3px solid transparent}
+.legend .p0{background:var(--rust)}
+.legend .p1{background:var(--sky);color:var(--ink)}
+.legend .cur{border-color:var(--gold)}
+
+.cr{width:100%;border-collapse:collapse;background:var(--panel);border-radius:16px;overflow:hidden}
+.cr th,.cr td{padding:10px 4px;text-align:center;border-bottom:1px solid var(--line)}
+.cr th{font-family:var(--head);font-weight:400;font-size:22px;color:var(--sky)}
+.cr td.nm{text-align:left;padding-left:14px;font-weight:900;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr tr.cur td.nm{color:var(--gold)}
+.cr tr.cur{background:rgba(242,193,78,.08)}
+.pips{display:inline-flex;gap:3px}
+.pips i{width:11px;height:20px;border-radius:3px;background:var(--bg);border:1px solid var(--line)}
+.pips i.on{background:var(--cream);border-color:var(--cream)}
+.pips.closed i{background:var(--pine2);border-color:var(--pine2)}
+.dots{display:inline-flex;gap:6px;vertical-align:middle;margin-left:8px}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--gold)}
+.dots i.used{background:var(--line)}
+
+.callgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.callgrid button{height:70px;border-radius:14px;background:var(--panel2);border:2px solid var(--line);font-size:19px;font-weight:900}
+.callgrid button.ks{grid-column:span 2;background:var(--rust);border-color:var(--rust)}
+.ask{font-size:24px;text-align:center;margin:6px 0 16px}
+.ask b{color:var(--gold)}
+.hm{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hm .btn{padding:26px;font-size:26px}
+
+.playwrap{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:14px;align-items:start}
+.rail{position:sticky;top:78px;display:flex;flex-direction:column;gap:10px}
+.rail .btn{flex-direction:column;gap:2px;padding:14px 6px;font-size:15px;width:100%;text-align:center}
+.rail .undo{min-height:150px;font-size:17px;background:var(--panel2);border:2px solid var(--sky)}
+.rail .undo span{font-size:40px;line-height:1}
+.rail .undo:disabled{border-color:var(--line)}
+.lblrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 10px}
+.lblrow .lbl{margin:0}
+.clear{background:#6b2f2c;border:1px solid var(--red);padding:10px 16px;border-radius:12px;font-weight:900;font-size:15px}
+@media (max-width:560px){.playwrap{grid-template-columns:minmax(0,1fr) 84px;gap:10px}.wrap{padding:12px 10px 30px}}
+@media (max-height:820px){
+  .top{padding-top:6px;padding-bottom:6px}.wrap{padding-top:8px}
+  .playhead{margin:0 0 8px}.playhead h2{font-size:22px}.turn{margin-bottom:8px;font-size:18px}
+  .sb{padding:8px 12px;margin-bottom:6px}.sb .tot{font-size:26px}
+  .letters span{width:32px;height:34px;font-size:20px}
+  .pad{margin-top:10px}.pad button{height:64px;font-size:30px}
+  .ttt{max-width:min(420px,calc(100vh - 290px))}.legend{margin-bottom:8px}.legend span{padding:6px 12px}
+  .ask{font-size:20px;margin:0 0 10px}.hm .btn{padding:18px;font-size:22px}.callgrid button{height:58px}
+  .card{padding:14px}.msg{margin-top:4px}.t21 .v{font-size:52px}
+  .rail{top:64px}.rail .undo{min-height:120px}
+}
+@media (max-height:640px){
+  .playhead{display:none}.sb{padding:6px 10px;margin-bottom:5px}.sb .nm{font-size:16px}
+  .boxes span{max-height:30px;font-size:15px}
+  .letters span{width:28px;height:28px;font-size:17px}
+  .pad{gap:8px}.pad button{height:54px;font-size:26px}.pad button.ks{font-size:18px}
+  .ttt{max-width:calc(100vh - 250px);gap:8px}.ttt button{font-size:34px}
+  .ask{font-size:18px}.hm .btn{padding:12px;font-size:20px}.callgrid{gap:8px}.callgrid button{height:48px;font-size:17px}
+  .t21{padding:10px}.t21 .v{font-size:42px}.cr th,.cr td{padding:6px 4px}
+  .rail .undo{min-height:100px}.rail .btn{padding:10px 6px}
+}
+/* winner */
+.win{text-align:center;padding:30px 10px}
+.trophy{font-size:90px;line-height:1}
+.win h1{font-size:46px;margin:10px 0 4px;color:var(--gold)}
+.win p{color:var(--muted);font-size:18px;margin:0 0 26px}
+.final{max-width:520px;margin:0 auto 24px;text-align:left}
+.final div{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);font-size:18px}
+.final div:first-child{color:var(--gold)}
+.stack{display:flex;flex-direction:column;gap:12px;max-width:520px;margin:0 auto}
+.hint{color:var(--muted);font-size:14px;text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="top"><div class="in" id="top"></div></div>
+<main class="wrap" id="app"></main>
+
+<script>
+/* ============================================================
+   SETTINGS — edit these to fit your venue
+   ============================================================ */
+const CONFIG = {
+  venue: 'Axe & Social',   // shown in the top bar if no logo loads
+  logo: 'logo.png',        // put a logo.png next to this file (optional)
+  lanes: 10,               // how many lanes you have
+  killshotPoints: 8,       // value of a killshot in Standard 10 Throw
+  maxPlayers: 8
+};
+/* ============================================================ */
+
+const $app = document.getElementById('app');
+const $top = document.getElementById('top');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ZONES = [6,5,4,3,2,1];
+
+/* ---------------- GAMES ---------------- */
+const GAMES = {
+  standard: {
+    name: 'Standard 10 Throw', tag: '1–8 players',
+    blurb: '10 throws each. High score wins.',
+    unit: 'Players', min: 1, max: CONFIG.maxPlayers,
+    rules: [
+      '10 throws per player. Split ’em up however you want.',
+      'Tap the score after every throw. Tap a name to switch who’s up.',
+      `A called killshot that hits is worth ${CONFIG.killshotPoints}.`,
+      'High score wins!'
+    ],
+    init: P => ({ t: P.map(() => []), turn: 0 }),
+    render(g, P) {
+      const sum = a => a.reduce((x, y) => x + y, 0);
+      let h = `<p class="turn">Up now: <b>${esc(P[g.turn])}</b> · throw ${g.t[g.turn].length + 1} of 10</p>`;
+      P.forEach((n, i) => {
+        const boxes = Array.from({length: 10}, (_, k) => {
+          const v = g.t[i][k];
+          return `<span class="${v === 'K' ? 'k' : ''}">${v === undefined ? '' : v === 'K' ? CONFIG.killshotPoints : v}</span>`;
+        }).join('');
+        const done = g.t[i].length >= 10;
+        h += `<button class="sb std ${i === g.turn ? 'cur' : ''}" data-a="sel" data-v="${i}" ${done ? 'disabled style="opacity:.7"' : ''}>
+          <span class="nm">${esc(n)}</span><span class="boxes">${boxes}</span><span class="tot">${sum(g.t[i].map(v => v === 'K' ? CONFIG.killshotPoints : v))}</span></button>`;
+      });
+      h += `<div class="pad">${padNums()}<button class="ks" data-a="score" data-v="K">Killshot<small>${CONFIG.killshotPoints} pts</small></button></div>`;
+      return h;
+    },
+    act(g, P, a, v) {
+      if (a === 'sel') { if (g.t[+v].length < 10) g.turn = +v; return; }
+      if (a !== 'score') return;
+      g.t[g.turn].push(v === 'K' ? 'K' : +v);
+      const n = P.length;
+      for (let k = 1; k <= n; k++) {
+        const j = (g.turn + k) % n;
+        if (g.t[j].length < 10) { g.turn = j; return; }
+      }
+      const tot = g.t.map(a => a.reduce((x, y) => x + (y === 'K' ? CONFIG.killshotPoints : y), 0));
+      return finish(P, tot, 'pts');
+    }
+  },
+
+  wazzi: {
+    name: 'W-A-Z-Z-I', tag: '2–8 players',
+    blurb: 'Like H-O-R-S-E, but it’s Wazzi.',
+    unit: 'Players', min: 2, max: CONFIG.maxPlayers,
+    rules: [
+      'Call your shot. If you hit it, your opponent(s) have to hit it. If they don’t, they get a letter.',
+      'If you hit your call, you keep calling. If you miss, it’s the next player’s turn.',
+      'Spell WAZZI and you’re out. Last player standing wins.'
+    ],
+    init: P => ({ L: P.map(() => 0), shooter: 0, phase: 'call', call: null, q: [] }),
+    render(g, P) {
+      let h = '';
+      P.forEach((n, i) => {
+        const cur = (g.phase === 'match' ? g.q[0] : g.shooter) === i;
+        h += `<div class="sb ${cur ? 'cur' : ''} ${g.L[i] >= 5 ? 'out' : ''}"><span class="nm">${esc(n)}</span>
+          <span class="letters" style="margin-left:auto">${'WAZZI'.split('').map((c, k) => `<span class="${k < g.L[i] ? 'on' : ''}">${c}</span>`).join('')}</span></div>`;
+      });
+      h += '<div class="card" style="margin-top:14px">';
+      if (g.phase === 'call') {
+        h += `<p class="ask"><b>${esc(P[g.shooter])}</b>, call your shot</p><div class="callgrid">
+          ${ZONES.map(z => `<button data-a="call" data-v="${z}">${z === 6 ? 'Bull (6)' : z}</button>`).join('')}
+          <button class="ks" data-a="call" data-v="Killshot">Killshot</button>
+          <button style="grid-column:span 2" data-a="call" data-v="Trick shot">Trick shot</button></div>`;
+      } else if (g.phase === 'shoot') {
+        h += `<p class="ask"><b>${esc(P[g.shooter])}</b> called <b>${esc(g.call)}</b><br>Did it hit?</p>
+          <div class="hm"><button class="btn good" data-a="shoot" data-v="1">Hit</button><button class="btn bad" data-a="shoot" data-v="0">Miss</button></div>
+          <div class="actions"><button class="btn" data-a="recall">Change call</button></div>`;
+      } else {
+        h += `<p class="ask"><b>${esc(P[g.q[0]])}</b>, match <b>${esc(g.call)}</b></p>
+          <div class="hm"><button class="btn good" data-a="match" data-v="1">Hit</button><button class="btn bad" data-a="match" data-v="0">Miss<br><small style="font-size:14px">+ letter</small></button></div>`;
+      }
+      return h + `</div>${g.msg ? `<p class="msg">${esc(g.msg)}</p>` : ''}`;
+    },
+    act(g, P, a, v) {
+      const alive = () => P.map((_, i) => i).filter(i => g.L[i] < 5);
+      const nextAlive = i => { for (let k = 1; k <= P.length; k++) { const j = (i + k) % P.length; if (g.L[j] < 5) return j; } return i; };
+      g.msg = '';
+      if (a === 'call') { g.call = v; g.phase = 'shoot'; }
+      else if (a === 'recall') { g.phase = 'call'; }
+      else if (a === 'shoot') {
+        if (v === '1') {
+          g.q = []; let j = g.shooter;
+          for (let k = 1; k < P.length; k++) { j = (g.shooter + k) % P.length; if (g.L[j] < 5) g.q.push(j); }
+          g.phase = 'match';
+        } else {
+          g.msg = `${P[g.shooter]} missed the call.`;
+          g.shooter = nextAlive(g.shooter); g.phase = 'call';
+        }
+      } else if (a === 'match') {
+        const p = g.q.shift();
+        if (v === '0') { g.L[p]++; g.msg = g.L[p] >= 5 ? `${P[p]} spelled WAZZI — out!` : `${P[p]} gets a ${'WAZZI'[g.L[p] - 1]}.`; }
+        else g.msg = `${P[p]} matched it.`;
+        const al = alive();
+        if (al.length === 1) return { names: [P[al[0]]], line: 'Last one standing', table: P.map((n, i) => [n, 'WAZZI'.slice(0, g.L[i]) || '—']) };
+        if (!g.q.length) { g.phase = 'call'; g.msg += ` ${P[g.shooter]} calls again.`; }
+      }
+    }
+  },
+
+  tictac: {
+    name: 'Tic Tac Axe', tag: '2 teams',
+    blurb: 'Claim squares. Three in a row wins.',
+    unit: 'Teams', min: 2, max: 2,
+    rules: [
+      'Teams take turns throwing one axe each.',
+      'Hit a square on the target to claim it. Tap that square here.',
+      'Already-claimed squares can’t be stolen — tap Miss if you hit one.',
+      'First team with three in a row wins. Full board with no winner is a draw.'
+    ],
+    labels: [1,2,5,4,6,4,3,2,1],
+    init: () => ({ b: Array(9).fill(null), turn: 0, line: null }),
+    render(g, P) {
+      let h = `<div class="legend">${P.map((n, i) => `<span class="p${i} ${i === g.turn ? 'cur' : ''}">${esc(n)}</span>`).join('')}</div>
+        <p class="turn"><b>${esc(P[g.turn])}</b> is throwing</p><div class="ttt">`;
+      g.b.forEach((o, i) => {
+        h += `<button class="${o === null ? '' : 'p' + o}" data-a="cell" data-v="${i}" ${o !== null ? 'disabled style="opacity:1"' : ''}>${this.labels[i]}${o !== null ? `<small>${esc(P[o])}</small>` : ''}</button>`;
+      });
+      return h + `</div><div class="pad" style="max-width:420px;margin:14px auto 0;grid-template-columns:1fr"><button class="miss" data-a="miss">Miss</button></div>`;
+    },
+    act(g, P, a, v) {
+      if (a === 'cell') {
+        const i = +v; if (g.b[i] !== null) return;
+        g.b[i] = g.turn;
+        const W = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        if (W.some(l => l.every(k => g.b[k] === g.turn))) return { names: [P[g.turn]], line: 'Three in a row!' };
+        if (g.b.every(x => x !== null)) return { names: [], line: 'Board’s full — it’s a draw.' };
+      } else if (a !== 'miss') return;
+      g.turn = 1 - g.turn;
+    }
+  },
+
+  cricket: {
+    name: 'Cricket Close Out', tag: '2–8 players',
+    blurb: 'Hit each number 3 times to close it.',
+    unit: 'Players', min: 2, max: CONFIG.maxPlayers,
+    rules: [
+      'Players take turns throwing 3 throws per round.',
+      'Hitting a scoring area 3 times closes it out.',
+      'Closing all scoring areas (6 through 1) wins the game.',
+      'Spicy mode: you also have to close the killshot.'
+    ],
+    options: [{ key: 'spicy', label: 'Spicy mode — killshot required to win' }],
+    init: (P, o) => ({ m: P.map(() => Object.fromEntries([...ZONES, 'K'].map(z => [z, 0]))), turn: 0, left: 3, spicy: !!o.spicy }),
+    render(g, P) {
+      const Z = g.spicy ? [...ZONES, 'K'] : ZONES;
+      const pips = n => `<span class="pips ${n >= 3 ? 'closed' : ''}">${[0,1,2].map(k => `<i class="${k < n ? 'on' : ''}"></i>`).join('')}</span>`;
+      let h = `<p class="turn"><b>${esc(P[g.turn])}</b> is up <span class="dots">${[0,1,2].map(k => `<i class="${k >= g.left ? 'used' : ''}"></i>`).join('')}</span></p>
+        <div style="overflow-x:auto"><table class="cr"><tr><th></th>${Z.map(z => `<th>${z === 'K' ? 'KS' : z}</th>`).join('')}</tr>`;
+      P.forEach((n, i) => { h += `<tr class="${i === g.turn ? 'cur' : ''}"><td class="nm">${esc(n)}</td>${Z.map(z => `<td>${pips(g.m[i][z])}</td>`).join('')}</tr>`; });
+      h += `</table></div><div class="pad">`;
+      h += ZONES.map(z => `<button data-a="hit" data-v="${z}" ${g.m[g.turn][z] >= 3 ? 'disabled' : ''}>${z}</button>`).join('');
+      if (g.spicy) h += `<button class="ks" data-a="hit" data-v="K" ${g.m[g.turn].K >= 3 ? 'disabled' : ''}>Killshot</button>`;
+      h += `<button class="miss" data-a="miss" style="grid-column:span 2">Miss</button></div>`;
+      return h;
+    },
+    side: () => `<button class="btn" data-a="pass">End turn<br>early →</button>`,
+    act(g, P, a, v) {
+      const next = () => { g.turn = (g.turn + 1) % P.length; g.left = 3; };
+      if (a === 'pass') return next();
+      if (a === 'hit') {
+        const z = v === 'K' ? 'K' : +v;
+        if (g.m[g.turn][z] < 3) g.m[g.turn][z]++;
+        const Z = g.spicy ? [...ZONES, 'K'] : ZONES;
+        if (Z.every(k => g.m[g.turn][k] >= 3)) return { names: [P[g.turn]], line: 'Closed everything out!' };
+      } else if (a !== 'miss') return;
+      if (--g.left <= 0) next();
+    }
+  },
+
+  t21: {
+    name: '21', tag: '2–8 teams',
+    blurb: 'First to exactly 21. Bust back to 11.',
+    unit: 'Teams', min: 2, max: CONFIG.maxPlayers,
+    rules: [
+      'Teams alternate throws. First team to exactly 21 wins.',
+      'If you go over 21, your score goes down to 11.',
+      'If a player calls and hits a killshot, ALL opposing teams go down to 11 — and down to 0 if they’re lower than 11.'
+    ],
+    init: P => ({ s: P.map(() => 0), turn: 0, msg: '' }),
+    render(g, P) {
+      let h = `<p class="turn"><b>${esc(P[g.turn])}</b> is throwing</p><div class="big21">`;
+      P.forEach((n, i) => {
+        h += `<div class="t21 ${i === g.turn ? 'cur' : ''}"><div class="nm">${esc(n)}</div><div class="v">${g.s[i]}</div>
+          <div class="need">needs ${21 - g.s[i]}</div><div class="bar"><i style="width:${g.s[i] / 21 * 100}%"></i></div></div>`;
+      });
+      return h + `</div><p class="msg">${esc(g.msg || '')}</p><div class="pad">${padNums()}<button class="ks" data-a="kill">Called<br>Killshot</button></div>`;
+    },
+    act(g, P, a, v) {
+      const t = g.turn;
+      if (a === 'score') {
+        const n = g.s[t] + +v;
+        if (n === 21) { g.s[t] = 21; return finish(P, g.s, ''); }
+        if (n > 21) { g.s[t] = 11; g.msg = `Bust! ${P[t]} drops to 11.`; }
+        else { g.s[t] = n; g.msg = +v === 0 ? `${P[t]} missed.` : `${P[t]} +${v}`; }
+      } else if (a === 'kill') {
+        g.s = g.s.map((s, i) => i === t ? s : (s >= 11 ? 11 : 0));
+        g.msg = `Killshot! Everyone else knocked down.`;
+      } else return;
+      g.turn = (t + 1) % P.length;
+    }
+  }
+};
+
+function padNums() {
+  return `<button class="miss" data-a="score" data-v="0">Miss</button>` + [1,2,3,4,5,6].map(n => `<button data-a="score" data-v="${n}">${n}</button>`).join('');
+}
+function finish(P, totals, unit) {
+  const best = Math.max(...totals);
+  const names = P.filter((_, i) => totals[i] === best);
+  const table = P.map((n, i) => [n, totals[i]]).sort((a, b) => b[1] - a[1]).map(([n, s]) => [n, s + (unit ? ' ' + unit : '')]);
+  return { names, line: names.length > 1 ? `Tied at ${best}` : `${best}${unit ? ' ' + unit : ''}`, table };
+}
+
+/* ---------------- LANE STATE ---------------- */
+let logoBad = false;
+let lane = null, S = null, quitArmed = false, quitTimer = null;
+const key = n => 'axe-lane-' + n;
+const blank = () => ({ screen: 'games', game: null, players: ['', ''], opts: {}, g: null, hist: [], win: null });
+function load(n) { try { return JSON.parse(localStorage.getItem(key(n))) || blank(); } catch (e) { return blank(); } }
+function save() { if (lane == null) return; try { localStorage.setItem(key(lane), JSON.stringify(S)); } catch (e) {} }
+function names() { const G = GAMES[S.game]; return S.players.map((n, i) => n.trim() || `${G.unit === 'Teams' ? 'Team' : 'Player'} ${i + 1}`); }
+
+function openLane(n) {
+  lane = n; S = load(n);
+  const u = new URL(location.href); u.searchParams.set('lane', n); history.replaceState(null, '', u);
+  render();
+}
+function toLanes() {
+  lane = null; S = null;
+  const u = new URL(location.href); u.searchParams.delete('lane'); history.replaceState(null, '', u);
+  render();
+}
+function startGame() {
+  const G = GAMES[S.game];
+  S.players = S.players.slice(0, G.max);
+  while (S.players.length < G.min) S.players.push('');
+  S.g = G.init(names(), S.opts); S.hist = []; S.win = null; S.screen = 'play';
+}
+
+/* ---------------- RENDER ---------------- */
+function render() {
+  // top bar
+  let t = `<div class="brand">${CONFIG.logo && !logoBad ? `<img src="${esc(CONFIG.logo)}" alt="" onerror="logoBad=true;this.remove()">` : ''}<b>${esc(CONFIG.venue)}</b></div>`;
+  if (lane != null) {
+    if (S.screen === 'play') t += `<button class="chip ${quitArmed ? 'warn' : ''}" data-a="quit">${quitArmed ? 'Tap again to end game' : '✕ End game'}</button>`;
+    else if (S.screen === 'setup') t += `<button class="chip" data-a="games">← Games</button>`;
+    t += `<button class="chip lane" data-a="lanes">Lane ${lane}</button>`;
+  }
+  $top.innerHTML = t;
+
+  if (lane == null) return renderLanes();
+  const G = GAMES[S.game];
+  if (S.screen === 'games' || !G) return renderGames();
+  if (S.screen === 'setup') return renderSetup(G);
+  if (S.screen === 'play') return renderPlay(G);
+  if (S.screen === 'winner') return renderWinner(G);
+}
+
+function renderLanes() {
+  let h = `<h1 class="title">Pick your lane</h1><p class="sub">Each lane keeps its own game. You can switch lanes anytime without losing scores.</p><div class="lanes">`;
+  for (let n = 1; n <= CONFIG.lanes; n++) {
+    const st = load(n), busy = st.screen === 'play' && GAMES[st.game];
+    h += `<button class="lanebtn ${busy ? 'busy' : ''}" data-a="lane" data-v="${n}"><div class="n">${n}</div><div class="s">${busy ? esc(GAMES[st.game].name) : 'Open'}</div></button>`;
+  }
+  h += `</div><p class="hint">Tip: bookmark <b>?lane=3</b> (etc.) on each lane’s tablet to skip this screen.</p>`;
+  $app.innerHTML = h;
+}
+
+function renderGames() {
+  let h = `<h1 class="title">Choose a game</h1><p class="sub">Lane ${lane}</p><div class="games">`;
+  for (const [id, G] of Object.entries(GAMES)) {
+    h += `<button class="gamebtn" data-a="pick" data-v="${id}"><span class="tag">${G.tag}</span><h3>${esc(G.name)}</h3><p>${esc(G.blurb)}</p></button>`;
+  }
+  $app.innerHTML = h + '</div>';
+}
+
+function renderSetup(G) {
+  const unit = G.unit === 'Teams' ? 'Team' : 'Player';
+  let h = `<h1 class="title">${esc(G.name)}</h1><p class="sub">How to play</p>
+    <div class="card"><ol class="rules">${G.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></div>
+    <div class="lblrow"><div class="lbl">${G.unit}</div><button class="clear" data-a="clear">✕ Clear names</button></div><div class="plist">`;
+  S.players.forEach((n, i) => {
+    h += `<div class="prow"><input data-i="${i}" value="${esc(n)}" placeholder="${unit} ${i + 1}" maxlength="18" autocomplete="off">
+      ${S.players.length > G.min ? `<button class="x" data-a="rm" data-v="${i}" aria-label="Remove">×</button>` : ''}</div>`;
+  });
+  h += `</div>`;
+  if (S.players.length < G.max) h += `<button class="btn" style="margin-top:10px;width:100%" data-a="add">+ Add ${unit.toLowerCase()}</button>`;
+  if (G.options) {
+    h += `<div class="lbl">Options</div>`;
+    G.options.forEach(o => { h += `<button class="toggle ${S.opts[o.key] ? 'on' : ''}" data-a="opt" data-v="${o.key}"><span class="sw"></span>${esc(o.label)}</button>`; });
+  }
+  h += `<div style="margin-top:24px"><button class="btn primary big" data-a="start">Start game</button></div>`;
+  $app.innerHTML = h;
+}
+
+function renderPlay(G) {
+  $app.innerHTML = `<div class="playwrap"><div>
+    <div class="playhead"><h2>${esc(G.name)}</h2></div>
+    <div id="rulesbox" class="card" style="display:none;margin-bottom:14px"><ol class="rules">${G.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></div>
+    ${G.render(S.g, names())}</div>
+    <div class="rail">
+      <button class="btn undo" data-a="undo" ${S.hist.length ? '' : 'disabled'}><span>↶</span>Undo<br>throw</button>
+      ${G.side ? G.side(S.g, names()) : ''}
+      <button class="btn" data-a="rulespeek">Rules</button>
+    </div></div>`;
+}
+
+function renderWinner(G) {
+  const w = S.win;
+  const head = w.names.length === 0 ? 'Draw!' : w.names.length > 1 ? `Tie: ${w.names.map(esc).join(' & ')}` : `${esc(w.names[0])} wins!`;
+  let h = `<div class="win"><div class="trophy">${w.names.length === 1 ? '🏆' : '🤝'}</div><h1>${head}</h1><p>${esc(G.name)} · ${esc(w.line)}</p>`;
+  if (w.table) h += `<div class="final card">${w.table.map(([n, s]) => `<div><span>${esc(n)}</span><span>${esc(s)}</span></div>`).join('')}</div>`;
+  h += `<div class="stack"><button class="btn primary big" data-a="replay">Play again</button>
+    <button class="btn big" data-a="games">Back to games</button>
+    <button class="btn big" data-a="newgroup">New group (clear names)</button>
+    <button class="btn" data-a="undo">↶ Oops — undo last throw</button></div></div>`;
+  $app.innerHTML = h;
+}
+
+/* ---------------- EVENTS ---------------- */
+document.addEventListener('input', e => {
+  const i = e.target.dataset && e.target.dataset.i;
+  if (i !== undefined && S) { S.players[+i] = e.target.value; save(); }
+});
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
+  const a = el.dataset.a, v = el.dataset.v;
+  if (a !== 'quit' && quitArmed) { quitArmed = false; clearTimeout(quitTimer); }
+
+  switch (a) {
+    case 'lane': return openLane(+v);
+    case 'lanes': return toLanes();
+    case 'pick': S.game = v; S.screen = 'setup'; S.opts = S.opts || {};
+      { const G = GAMES[v]; while (S.players.length < G.min) S.players.push(''); S.players = S.players.slice(0, G.max); } break;
+    case 'games': S.screen = 'games'; S.g = null; S.win = null; S.hist = []; break;
+    case 'add': S.players.push(''); save(); render(); { const ins = $app.querySelectorAll('.prow input'); ins[ins.length - 1].focus(); } return;
+    case 'rm': S.players.splice(+v, 1); break;
+    case 'clear': S.players = ['', '']; break;
+    case 'newgroup': S.players = ['', '']; S.screen = 'games'; S.g = null; S.win = null; S.hist = []; break;
+    case 'opt': S.opts[v] = !S.opts[v]; break;
+    case 'start': case 'replay': startGame(); break;
+    case 'rulespeek': { const b = document.getElementById('rulesbox'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; } return;
+    case 'quit':
+      if (!quitArmed) { quitArmed = true; quitTimer = setTimeout(() => { quitArmed = false; render(); }, 3000); break; }
+      quitArmed = false; clearTimeout(quitTimer); S.screen = 'games'; S.g = null; S.hist = []; break;
+    case 'undo':
+      if (!S.hist.length) return;
+      S.g = JSON.parse(S.hist.pop()); S.win = null; S.screen = 'play'; break;
+    default: {
+      if (S.screen !== 'play') return;
+      const snap = JSON.stringify(S.g);
+      const res = GAMES[S.game].act(S.g, names(), a, v);
+      if (snap === JSON.stringify(S.g) && !res) return; // nothing changed
+      S.hist.push(snap); if (S.hist.length > 200) S.hist.shift();
+      if (res) { S.win = res; S.screen = 'winner'; }
+    }
+  }
+  save(); render();
+  if (['pick', 'start', 'replay', 'games', 'undo', 'newgroup'].includes(a)) window.scrollTo(0, 0);
+});
+
+// keep lanes in sync if the same lane is open in two tabs
+window.addEventListener('storage', e => { if (lane != null && e.key === key(lane)) { S = load(lane); render(); } });
+
+/* ---------------- BOOT ---------------- */
+const q = +new URLSearchParams(location.search).get('lane');
+if (q >= 1 && q <= CONFIG.lanes) openLane(q); else render();
+</script>
+</body>
+</html>
