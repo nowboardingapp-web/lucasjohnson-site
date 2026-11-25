@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Picks · Lucas Johnson</title>
+<meta name="description" content="Stuff I actually use and recommend.">
+<meta property="og:title" content="My Picks · Lucas Johnson">
+<meta property="og:description" content="Stuff I actually use and recommend.">
+<style>
+  :root {
+    --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --muted: #6e6e73;
+    --line: #e5e5ea; --accent: #0a84ff; --accent-text: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #000000; --card: #1c1c1e; --text: #f5f5f7; --muted: #98989d; --line: #2c2c2e; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    padding: max(32px, env(safe-area-inset-top)) 18px max(32px, env(safe-area-inset-bottom));
+  }
+  main { max-width: 560px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 28px; }
+  .avatar {
+    width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 14px;
+    background: var(--card); border: 1px solid var(--line);
+    display: grid; place-items: center; font-size: 30px; font-weight: 700; overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  .tagline { color: var(--muted); margin-top: 4px; font-size: 15px; }
+  .list { display: flex; flex-direction: column; gap: 14px; }
+  .item {
+    display: flex; gap: 14px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 14px; text-decoration: none; color: inherit;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .item:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+  .item:active { transform: scale(.99); }
+  .thumb {
+    flex: 0 0 76px; height: 76px; border-radius: 12px; background: var(--bg);
+    display: grid; place-items: center; font-size: 30px; overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .info { flex: 1; min-width: 0; }
+  .tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+  .name { font-size: 16px; font-weight: 600; margin-top: 2px; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 3px; }
+  .btn {
+    flex: 0 0 auto; background: var(--accent); color: var(--accent-text);
+    font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 999px; white-space: nowrap;
+  }
+  footer { margin-top: 30px; text-align: center; color: var(--muted); font-size: 12px; }
+  footer a { color: var(--muted); }
+  @media (max-width: 380px) { .btn { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <!-- Swap the "LJ" for <img src="/picks/me.jpg" alt="Lucas Johnson"> if you want a photo -->
+    <div class="avatar">LJ</div>
+    <h1>My Picks</h1>
+    <p class="tagline">iPhone Duo gear I actually use and recommend.</p>
+  </header>
+
+  <section class="list" id="list"></section>
+
+  <footer>
+    <p>As an Amazon Associate I earn from qualifying purchases.</p>
+    <p style="margin-top:8px"><a href="https://lucasjohnson.app">lucasjohnson.app</a></p>
+  </footer>
+</main>
+
+<script>
+  // ── EDIT YOUR PICKS HERE ──────────────────────────────────────────
+  // To add a product, copy one block and change the text + link.
+  // image: optional path to your own photo (e.g. "/picks/charger.jpg"); leave "" to show the emoji.
+  const picks = [
+    {
+      tag: "iPhone Duo · Case",
+      name: "Exhipat TechWoven Folio Case",
+      note: "Woven magnetic folio with a kickstand and hinge protection. MagSafe works through it. 4 colors.",
+      link: "https://link.amazon/B0aIeplGB",
+      image: "",
+      emoji: "📱"
+    },
+    {
+      tag: "iPhone Duo · Wallet",
+      name: "Miimall MagSafe Leather Wallet",
+      note: "Slim leather wallet with a double magnet so it stays put. Holds 3 cards, RFID blocking.",
+      link: "https://link.amazon/B0j2NKkIx",
+      image: "",
+      emoji: "💳"
+    }
+  ];
+  // ─────────────────────────────────────────────────────────────────
+
+  const list = document.getElementById("list");
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  list.innerHTML = picks.map(p => `
+    <a class="item" href="${esc(p.link)}" target="_blank" rel="sponsored nofollow noopener">
+      <div class="thumb">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : esc(p.emoji || "🛒")}</div>
+      <div class="info">
+        ${p.tag ? `<div class="tag">${esc(p.tag)}</div>` : ""}
+        <div class="name">${esc(p.name)}</div>
+        ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}
+      </div>
+      <span class="btn">View on Amazon</span>
+    </a>`).join("");
+</script>
+</body>
+</html>
