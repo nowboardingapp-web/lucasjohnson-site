@@ -191,6 +191,31 @@ h1,h2,h3{font-family:var(--head);font-weight:400;letter-spacing:.5px;margin:0}
   .t21{padding:10px}.t21 .v{font-size:42px}.cr th,.cr td{padding:6px 4px}
   .rail .undo{min-height:100px}.rail .btn{padding:10px 6px}
 }
+/* tap-to-edit */
+.editable{cursor:pointer;outline:2px solid transparent}
+.boxes button{aspect-ratio:1;max-height:40px;border-radius:7px;background:var(--cream);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:18px;padding:0}
+.boxes button.k{background:var(--rust);color:#fff}
+.boxes button.sel{outline:3px solid var(--gold)}
+.sb .nmbtn{background:none;text-align:left;padding:0}
+.cr td button{background:none;padding:6px 4px;border-radius:8px}
+.cr td button:active{background:var(--panel2)}
+.letters button{width:38px;height:42px;border-radius:9px;border:2px solid var(--red);background:var(--red);color:#fff;font-family:var(--head);font-size:24px;padding:0}
+.hist{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px;min-height:26px}
+.hist button{min-width:28px;height:26px;padding:0 6px;border-radius:7px;background:var(--cream);color:var(--ink);font-family:var(--head);font-size:15px}
+.hist button.k{background:var(--rust);color:#fff}
+.edithint{color:var(--muted);font-size:13px;text-align:center;margin:6px 0 0}
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,14,19,.7);display:flex;align-items:center;justify-content:center;padding:20px}
+.sheet .box{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:20px;width:min(520px,100%)}
+.sheet h3{font-size:24px;text-align:center;margin-bottom:4px}
+.sheet p{color:var(--muted);text-align:center;margin:0 0 14px}
+.sheet .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sheet .opts button{height:64px;border-radius:14px;background:var(--cream);color:var(--ink);font-family:var(--head);font-size:26px}
+.sheet .opts button.wide{grid-column:span 2;font-size:20px}
+.sheet .opts button.full{grid-column:1/-1;font-family:var(--body);font-weight:900;font-size:19px}
+.sheet .opts button.k{background:var(--rust);color:#fff}
+.sheet .opts button.del{background:#6b2f2c;color:#fff;border:1px solid var(--red)}
+.sheet .opts button.cur{outline:4px solid var(--gold)}
+.sheet .cancel{margin-top:12px;width:100%}
 /* winner */
 .win{text-align:center;padding:30px 10px}
 .trophy{font-size:90px;line-height:1}
@@ -235,6 +260,7 @@ const GAMES = {
     rules: [
       '10 throws per player. Split ’em up however you want.',
       'Tap the score after every throw. Tap a name to switch who’s up.',
+      'Tap any recorded score to change or remove it.',
       `A called killshot that hits is worth ${CONFIG.killshotPoints}.`,
       'High score wins!'
     ],
@@ -245,17 +271,31 @@ const GAMES = {
       P.forEach((n, i) => {
         const boxes = Array.from({length: 10}, (_, k) => {
           const v = g.t[i][k];
-          return `<span class="${v === 'K' ? 'k' : ''}">${v === undefined ? '' : v === 'K' ? CONFIG.killshotPoints : v}</span>`;
+          if (v === undefined) return '<span></span>';
+          return `<button class="${v === 'K' ? 'k' : ''}" data-a="edit" data-v="${i}:${k}">${v === 'K' ? CONFIG.killshotPoints : v}</button>`;
         }).join('');
         const done = g.t[i].length >= 10;
-        h += `<button class="sb std ${i === g.turn ? 'cur' : ''}" data-a="sel" data-v="${i}" ${done ? 'disabled style="opacity:.7"' : ''}>
-          <span class="nm">${esc(n)}</span><span class="boxes">${boxes}</span><span class="tot">${sum(g.t[i].map(v => v === 'K' ? CONFIG.killshotPoints : v))}</span></button>`;
+        h += `<div class="sb std ${i === g.turn ? 'cur' : ''}" ${done ? 'style="opacity:.75"' : ''}>
+          <button class="nm nmbtn" data-a="sel" data-v="${i}">${esc(n)}</button><span class="boxes">${boxes}</span><span class="tot">${sum(g.t[i].map(v => v === 'K' ? CONFIG.killshotPoints : v))}</span></div>`;
       });
       h += `<div class="pad">${padNums()}<button class="ks" data-a="score" data-v="K">Killshot<small>${CONFIG.killshotPoints} pts</small></button></div>`;
       return h;
     },
+    edit(g, P, v) {
+      const [i, k] = v.split(':').map(Number), cur = g.t[i][k];
+      return { title: `${P[i]} — throw ${k + 1}`, sub: 'Change the score or remove it',
+        opts: [...[0,1,2,3,4,5,6].map(n => ({ label: n === 0 ? 'Miss' : n, a: 'set', v: `${i}:${k}:${n}`, cur: cur === n })),
+          { label: `Killshot (${CONFIG.killshotPoints})`, a: 'set', v: `${i}:${k}:K`, cls: 'k wide', cur: cur === 'K' },
+          { label: 'Remove this throw', a: 'set', v: `${i}:${k}:X`, cls: 'del full' }] };
+    },
     act(g, P, a, v) {
       if (a === 'sel') { if (g.t[+v].length < 10) g.turn = +v; return; }
+      if (a === 'set') {
+        const [i, k, val] = v.split(':');
+        if (val === 'X') { g.t[+i].splice(+k, 1); g.turn = +i; }
+        else g.t[+i][+k] = val === 'K' ? 'K' : +val;
+        return;
+      }
       if (a !== 'score') return;
       g.t[g.turn].push(v === 'K' ? 'K' : +v);
       const n = P.length;
@@ -275,7 +315,8 @@ const GAMES = {
     rules: [
       'Call your shot. If you hit it, your opponent(s) have to hit it. If they don’t, they get a letter.',
       'If you hit your call, you keep calling. If you miss, it’s the next player’s turn.',
-      'Spell WAZZI and you’re out. Last player standing wins.'
+      'Spell WAZZI and you’re out. Last player standing wins.',
+      'Tap a letter to take it back if it was given by mistake.'
     ],
     init: P => ({ L: P.map(() => 0), shooter: 0, phase: 'call', call: null, q: [] }),
     render(g, P) {
@@ -283,7 +324,7 @@ const GAMES = {
       P.forEach((n, i) => {
         const cur = (g.phase === 'match' ? g.q[0] : g.shooter) === i;
         h += `<div class="sb ${cur ? 'cur' : ''} ${g.L[i] >= 5 ? 'out' : ''}"><span class="nm">${esc(n)}</span>
-          <span class="letters" style="margin-left:auto">${'WAZZI'.split('').map((c, k) => `<span class="${k < g.L[i] ? 'on' : ''}">${c}</span>`).join('')}</span></div>`;
+          <span class="letters" style="margin-left:auto">${'WAZZI'.split('').map((c, k) => k < g.L[i] ? `<button data-a="edit" data-v="${i}">${c}</button>` : `<span>${c}</span>`).join('')}</span></div>`;
       });
       h += '<div class="card" style="margin-top:14px">';
       if (g.phase === 'call') {
@@ -301,7 +342,13 @@ const GAMES = {
       }
       return h + `</div>${g.msg ? `<p class="msg">${esc(g.msg)}</p>` : ''}`;
     },
+    edit(g, P, v) {
+      const i = +v;
+      return { title: `${P[i]} has ${'WAZZI'.slice(0, g.L[i])}`, sub: g.L[i] >= 5 ? 'Removing a letter puts them back in the game' : 'Take a letter back?',
+        opts: [{ label: 'Remove last letter', a: 'unletter', v: String(i), cls: 'del full' }] };
+    },
     act(g, P, a, v) {
+      if (a === 'unletter') { const i = +v; if (g.L[i] > 0) { g.L[i]--; g.msg = `${P[i]} gets a letter back.`; } return; }
       const alive = () => P.map((_, i) => i).filter(i => g.L[i] < 5);
       const nextAlive = i => { for (let k = 1; k <= P.length; k++) { const j = (i + k) % P.length; if (g.L[j] < 5) return j; } return i; };
       g.msg = '';
@@ -335,6 +382,7 @@ const GAMES = {
       'Teams take turns throwing one axe each.',
       'Hit a square on the target to claim it. Tap that square here.',
       'Already-claimed squares can’t be stolen — tap Miss if you hit one.',
+      'Tapped the wrong square? Tap it again to clear it or give it to the other team.',
       'First team with three in a row wins. Full board with no winner is a draw.'
     ],
     labels: [1,2,5,4,6,4,3,2,1],
@@ -343,11 +391,23 @@ const GAMES = {
       let h = `<div class="legend">${P.map((n, i) => `<span class="p${i} ${i === g.turn ? 'cur' : ''}">${esc(n)}</span>`).join('')}</div>
         <p class="turn"><b>${esc(P[g.turn])}</b> is throwing</p><div class="ttt">`;
       g.b.forEach((o, i) => {
-        h += `<button class="${o === null ? '' : 'p' + o}" data-a="cell" data-v="${i}" ${o !== null ? 'disabled style="opacity:1"' : ''}>${this.labels[i]}${o !== null ? `<small>${esc(P[o])}</small>` : ''}</button>`;
+        h += `<button class="${o === null ? '' : 'p' + o}" data-a="${o === null ? 'cell' : 'edit'}" data-v="${i}">${this.labels[i]}${o !== null ? `<small>${esc(P[o])}</small>` : ''}</button>`;
       });
       return h + `</div><div class="pad" style="max-width:420px;margin:14px auto 0;grid-template-columns:1fr"><button class="miss" data-a="miss">Miss</button></div>`;
     },
+    edit(g, P, v) {
+      const i = +v, o = g.b[i];
+      return { title: `Square ${this.labels[i]} — ${P[o]}`, sub: 'Fix who owns this square',
+        opts: [{ label: `Give to ${P[1 - o]}`, a: 'setcell', v: `${i}:${1 - o}`, cls: 'full' },
+               { label: 'Clear this square', a: 'setcell', v: `${i}:X`, cls: 'del full' }] };
+    },
     act(g, P, a, v) {
+      if (a === 'setcell') {
+        const [i, o] = v.split(':'); g.b[+i] = o === 'X' ? null : +o;
+        const W = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        for (const t of [0, 1]) if (W.some(l => l.every(k => g.b[k] === t))) return { names: [P[t]], line: 'Three in a row!' };
+        return;
+      }
       if (a === 'cell') {
         const i = +v; if (g.b[i] !== null) return;
         g.b[i] = g.turn;
@@ -367,7 +427,8 @@ const GAMES = {
       'Players take turns throwing 3 throws per round.',
       'Hitting a scoring area 3 times closes it out.',
       'Closing all scoring areas (6 through 1) wins the game.',
-      'Spicy mode: you also have to close the killshot.'
+      'Spicy mode: you also have to close the killshot.',
+      'Tap a player’s marks to fix them.'
     ],
     options: [{ key: 'spicy', label: 'Spicy mode — killshot required to win' }],
     init: (P, o) => ({ m: P.map(() => Object.fromEntries([...ZONES, 'K'].map(z => [z, 0]))), turn: 0, left: 3, spicy: !!o.spicy }),
@@ -376,17 +437,28 @@ const GAMES = {
       const pips = n => `<span class="pips ${n >= 3 ? 'closed' : ''}">${[0,1,2].map(k => `<i class="${k < n ? 'on' : ''}"></i>`).join('')}</span>`;
       let h = `<p class="turn"><b>${esc(P[g.turn])}</b> is up <span class="dots">${[0,1,2].map(k => `<i class="${k >= g.left ? 'used' : ''}"></i>`).join('')}</span></p>
         <div style="overflow-x:auto"><table class="cr"><tr><th></th>${Z.map(z => `<th>${z === 'K' ? 'KS' : z}</th>`).join('')}</tr>`;
-      P.forEach((n, i) => { h += `<tr class="${i === g.turn ? 'cur' : ''}"><td class="nm">${esc(n)}</td>${Z.map(z => `<td>${pips(g.m[i][z])}</td>`).join('')}</tr>`; });
+      P.forEach((n, i) => { h += `<tr class="${i === g.turn ? 'cur' : ''}"><td class="nm">${esc(n)}</td>${Z.map(z => `<td>${g.m[i][z] ? `<button data-a="edit" data-v="${i}:${z}">${pips(g.m[i][z])}</button>` : pips(0)}</td>`).join('')}</tr>`; });
       h += `</table></div><div class="pad">`;
       h += ZONES.map(z => `<button data-a="hit" data-v="${z}" ${g.m[g.turn][z] >= 3 ? 'disabled' : ''}>${z}</button>`).join('');
       if (g.spicy) h += `<button class="ks" data-a="hit" data-v="K" ${g.m[g.turn].K >= 3 ? 'disabled' : ''}>Killshot</button>`;
       h += `<button class="miss" data-a="miss" style="grid-column:span 2">Miss</button></div>`;
       return h;
     },
+    edit(g, P, v) {
+      const [i, z] = v.split(':'), cur = g.m[+i][z];
+      return { title: `${P[+i]} — ${z === 'K' ? 'Killshot' : z}`, sub: 'How many hits should this have?',
+        opts: [0,1,2,3].map(n => ({ label: n === 0 ? 'None' : n === 3 ? '3 (closed)' : n, a: 'setm', v: `${i}:${z}:${n}`, cls: n === 0 ? 'del' : '', cur: cur === n })) };
+    },
     side: () => `<button class="btn" data-a="pass">End turn<br>early →</button>`,
     act(g, P, a, v) {
       const next = () => { g.turn = (g.turn + 1) % P.length; g.left = 3; };
       if (a === 'pass') return next();
+      if (a === 'setm') {
+        const [i, z, n] = v.split(':'); g.m[+i][z] = +n;
+        const Z = g.spicy ? [...ZONES, 'K'] : ZONES;
+        if (Z.every(k => g.m[+i][k] >= 3)) return { names: [P[+i]], line: 'Closed everything out!' };
+        return;
+      }
       if (a === 'hit') {
         const z = v === 'K' ? 'K' : +v;
         if (g.m[g.turn][z] < 3) g.m[g.turn][z]++;
@@ -404,26 +476,52 @@ const GAMES = {
     rules: [
       'Teams alternate throws. First team to exactly 21 wins.',
       'If you go over 21, your score goes down to 11.',
-      'If a player calls and hits a killshot, ALL opposing teams go down to 11 — and down to 0 if they’re lower than 11.'
+      'If a player calls and hits a killshot, ALL opposing teams go down to 11 — and down to 0 if they’re lower than 11.',
+      'Tap any throw under a team’s score to change or remove it.'
     ],
-    init: P => ({ s: P.map(() => 0), turn: 0, msg: '' }),
+    init: P => ({ s: P.map(() => 0), log: [], turn: 0, msg: '' }),
+    replay(g, n) {
+      const s = Array(n).fill(0);
+      for (const e of g.log) {
+        if (e.v === 'K') { for (let i = 0; i < n; i++) if (i !== e.t) s[i] = s[i] >= 11 ? 11 : 0; }
+        else { const x = s[e.t] + e.v; s[e.t] = x > 21 ? 11 : x; }
+      }
+      g.s = s;
+    },
+    edit(g, P, v) {
+      const e = g.log[+v], num = g.log.filter(x => x.t === e.t).indexOf(e) + 1;
+      return { title: `${P[e.t]} — throw ${num}`, sub: 'Scores are recalculated after a change',
+        opts: [...[0,1,2,3,4,5,6].map(n => ({ label: n === 0 ? 'Miss' : n, a: 'set', v: `${v}:${n}`, cur: e.v === n })),
+          { label: 'Killshot', a: 'set', v: `${v}:K`, cls: 'k wide', cur: e.v === 'K' },
+          { label: 'Remove this throw', a: 'set', v: `${v}:X`, cls: 'del full' }] };
+    },
     render(g, P) {
+      if (!g.log) { g.log = []; }
       let h = `<p class="turn"><b>${esc(P[g.turn])}</b> is throwing</p><div class="big21">`;
       P.forEach((n, i) => {
         h += `<div class="t21 ${i === g.turn ? 'cur' : ''}"><div class="nm">${esc(n)}</div><div class="v">${g.s[i]}</div>
-          <div class="need">needs ${21 - g.s[i]}</div><div class="bar"><i style="width:${g.s[i] / 21 * 100}%"></i></div></div>`;
+          <div class="need">needs ${21 - g.s[i]}</div><div class="bar"><i style="width:${g.s[i] / 21 * 100}%"></i></div>
+          <div class="hist">${g.log.map((e, k) => e.t === i ? `<button class="${e.v === 'K' ? 'k' : ''}" data-a="edit" data-v="${k}">${e.v === 'K' ? 'KS' : e.v}</button>` : '').join('')}</div></div>`;
       });
       return h + `</div><p class="msg">${esc(g.msg || '')}</p><div class="pad">${padNums()}<button class="ks" data-a="kill">Called<br>Killshot</button></div>`;
     },
     act(g, P, a, v) {
       const t = g.turn;
+      if (!g.log) g.log = [];
+      if (a === 'set') {
+        const [k, val] = v.split(':');
+        if (val === 'X') g.log.splice(+k, 1); else g.log[+k].v = val === 'K' ? 'K' : +val;
+        this.replay(g, P.length); g.msg = 'Score updated.';
+        const w = g.s.indexOf(21); if (w >= 0) return finish(P, g.s, '');
+        return;
+      }
       if (a === 'score') {
         const n = g.s[t] + +v;
-        if (n === 21) { g.s[t] = 21; return finish(P, g.s, ''); }
-        if (n > 21) { g.s[t] = 11; g.msg = `Bust! ${P[t]} drops to 11.`; }
-        else { g.s[t] = n; g.msg = +v === 0 ? `${P[t]} missed.` : `${P[t]} +${v}`; }
+        g.log.push({ t, v: +v }); this.replay(g, P.length);
+        if (n === 21) return finish(P, g.s, '');
+        g.msg = n > 21 ? `Bust! ${P[t]} drops to 11.` : +v === 0 ? `${P[t]} missed.` : `${P[t]} +${v}`;
       } else if (a === 'kill') {
-        g.s = g.s.map((s, i) => i === t ? s : (s >= 11 ? 11 : 0));
+        g.log.push({ t, v: 'K' }); this.replay(g, P.length);
         g.msg = `Killshot! Everyone else knocked down.`;
       } else return;
       g.turn = (t + 1) % P.length;
@@ -442,7 +540,7 @@ function finish(P, totals, unit) {
 }
 
 /* ---------------- LANE STATE ---------------- */
-let logoBad = false;
+let logoBad = false, editing = null;
 let lane = null, S = null, quitArmed = false, quitTimer = null;
 const key = n => 'axe-lane-' + n;
 const blank = () => ({ screen: 'games', game: null, players: ['', ''], opts: {}, g: null, hist: [], win: null });
@@ -532,7 +630,13 @@ function renderPlay(G) {
       <button class="btn undo" data-a="undo" ${S.hist.length ? '' : 'disabled'}><span>↶</span>Undo<br>throw</button>
       ${G.side ? G.side(S.g, names()) : ''}
       <button class="btn" data-a="rulespeek">Rules</button>
-    </div></div>`;
+    </div></div>${editing ? renderSheet(editing) : ''}`;
+}
+
+function renderSheet(m) {
+  return `<div class="sheet" data-a="closesheet"><div class="box" data-a="noop"><h3>${esc(m.title)}</h3>${m.sub ? `<p>${esc(m.sub)}</p>` : ''}
+    <div class="opts">${m.opts.map(o => `<button class="${o.cls || ''} ${o.cur ? 'cur' : ''}" data-a="${o.a}" data-v="${esc(o.v)}">${esc(o.label)}</button>`).join('')}</div>
+    <button class="btn cancel" data-a="closesheet">Cancel</button></div></div>`;
 }
 
 function renderWinner(G) {
@@ -557,6 +661,11 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
   const a = el.dataset.a, v = el.dataset.v;
   if (a !== 'quit' && quitArmed) { quitArmed = false; clearTimeout(quitTimer); }
+
+  if (a === 'noop') return;
+  if (a === 'closesheet') { editing = null; return render(); }
+  if (a === 'edit') { const G = GAMES[S.game]; if (S.screen === 'play' && G.edit) { editing = G.edit(S.g, names(), v); render(); } return; }
+  editing = null;
 
   switch (a) {
     case 'lane': return openLane(+v);
