@@ -4,9 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Picks · Lucas Johnson</title>
-<meta name="description" content="Stuff I actually use and recommend.">
+<meta name="description" content="Things we like and recommend: tech, travel and wife&#39;s picks.">
 <meta property="og:title" content="My Picks · Lucas Johnson">
-<meta property="og:description" content="Stuff I actually use and recommend.">
+<meta property="og:description" content="Things we like and recommend: tech, travel and wife&#39;s picks.">
+<meta property="og:url" content="https://lucasjohnson.app/picks/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://lucasjohnson.app/picks/">
 <style>
   :root {
     --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --muted: #6e6e73;
@@ -77,8 +80,57 @@
     <p class="tagline">Things we like and recommend.</p>
   </header>
 
-  <nav class="tabs" id="tabs"></nav>
-  <div id="list"></div>
+  <nav class="tabs" id="tabs"><a href="#tech-picks">Tech Picks</a><a href="#travel-picks">Travel Picks</a><a href="#wife-s-picks">Wife&#39;s Picks</a></nav>
+  <div id="list">
+    <section class="cat" id="tech-picks">
+      <h2>Tech Picks</h2>
+      <div class="list">
+    <a class="item" href="https://link.amazon/B0aIeplGB" target="_blank" rel="sponsored nofollow noopener">
+      <div class="thumb">📱</div>
+      <div class="info">
+        <div class="tag">iPhone Duo · Case</div>
+        <div class="name">Exhipat TechWoven Folio Case</div>
+        <div class="note">Woven magnetic folio with a kickstand and hinge protection. MagSafe works through it. 4 colors.</div>
+      </div>
+      <span class="btn">View on Amazon</span>
+    </a>
+    <a class="item" href="https://link.amazon/B0j2NKkIx" target="_blank" rel="sponsored nofollow noopener">
+      <div class="thumb">💳</div>
+      <div class="info">
+        <div class="tag">iPhone Duo · Wallet</div>
+        <div class="name">Miimall MagSafe Leather Wallet</div>
+        <div class="note">Slim leather wallet with a double magnet so it stays put. Holds 3 cards, RFID blocking.</div>
+      </div>
+      <span class="btn">View on Amazon</span>
+    </a></div>
+    </section>
+    <section class="cat" id="travel-picks">
+      <h2>Travel Picks</h2>
+      <div class="list">
+    <a class="item" href="https://link.amazon/B07W8OuiI" target="_blank" rel="sponsored nofollow noopener">
+      <div class="thumb">🎧</div>
+      <div class="info">
+        <div class="tag">Travel · Audio</div>
+        <div class="name">Apple AirPods</div>
+        <div class="note">Easy to pack, quick to pair with your iPhone, and great for flights and long layovers.</div>
+      </div>
+      <span class="btn">View on Amazon</span>
+    </a></div>
+    </section>
+    <section class="cat" id="wife-s-picks">
+      <h2>Wife&#39;s Picks</h2>
+      <div class="list">
+    <a class="item" href="https://link.amazon/B01gJZMef" target="_blank" rel="sponsored nofollow noopener">
+      <div class="thumb">🧘‍♀️</div>
+      <div class="info">
+        <div class="tag">Activewear</div>
+        <div class="name">CRZ YOGA Secretsculpt Leggings 25&quot;</div>
+        <div class="note">Buttery soft, high waist with pockets and no front seam. Lots of colors, sizes XXS–XL.</div>
+      </div>
+      <span class="btn">View on Amazon</span>
+    </a></div>
+    </section>
+  </div>
 
   <footer>
     <p>As an Amazon Associate I earn from qualifying purchases.</p>
@@ -87,84 +139,7 @@
 </main>
 
 <script>
-  // ── EDIT YOUR PICKS HERE ──────────────────────────────────────────
-  // Each category has a title and a list of items. To add a product, copy one
-  // item block into the right category and change the text + link.
-  // To add a category, copy a whole { title, items } block.
-  // image: optional path to your own photo (e.g. "/picks/case.jpg"); leave "" to show the emoji.
-  const categories = [
-    {
-      title: "Tech Picks",
-      items: [
-        {
-          tag: "iPhone Duo · Case",
-          name: "Exhipat TechWoven Folio Case",
-          note: "Woven magnetic folio with a kickstand and hinge protection. MagSafe works through it. 4 colors.",
-          link: "https://link.amazon/B0aIeplGB",
-          image: "",
-          emoji: "📱"
-        },
-        {
-          tag: "iPhone Duo · Wallet",
-          name: "Miimall MagSafe Leather Wallet",
-          note: "Slim leather wallet with a double magnet so it stays put. Holds 3 cards, RFID blocking.",
-          link: "https://link.amazon/B0j2NKkIx",
-          image: "",
-          emoji: "💳"
-        }
-      ]
-    },
-    {
-      title: "Travel Picks",
-      items: [
-        {
-          tag: "Travel · Audio",
-          name: "Apple AirPods",
-          note: "Easy to pack, quick to pair with your iPhone, and great for flights and long layovers.",
-          link: "https://link.amazon/B07W8OuiI",
-          image: "",
-          emoji: "🎧"
-        }
-      ]
-    },
-    {
-      title: "Wife's Picks",
-      items: [
-        {
-          tag: "Activewear",
-          name: "CRZ YOGA Secretsculpt Leggings 25\"",
-          note: "Buttery soft, high waist with pockets and no front seam. Lots of colors, sizes XXS–XL.",
-          link: "https://link.amazon/B01gJZMef",
-          image: "",
-          emoji: "🧘‍♀️"
-        }
-      ]
-    }
-  ];
-  // ─────────────────────────────────────────────────────────────────
-
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const card = p => `
-    <a class="item" href="${esc(p.link)}" target="_blank" rel="sponsored nofollow noopener">
-      <div class="thumb">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : esc(p.emoji || "🛒")}</div>
-      <div class="info">
-        ${p.tag ? `<div class="tag">${esc(p.tag)}</div>` : ""}
-        <div class="name">${esc(p.name)}</div>
-        ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}
-      </div>
-      <span class="btn">View on Amazon</span>
-    </a>`;
-
-  document.getElementById("tabs").innerHTML = categories.length > 1
-    ? categories.map(c => `<a href="#${slug(c.title)}">${esc(c.title)}</a>`).join("") : "";
-  document.getElementById("list").innerHTML = categories.map(c => `
-    <section class="cat" id="${slug(c.title)}">
-      <h2>${esc(c.title)}</h2>
-      <div class="list">${c.items.length ? c.items.map(card).join("") : `<p class="empty">Coming soon.</p>`}</div>
-    </section>`).join("");
-
-  // Highlight the tab for the section in the URL (e.g. /picks#wife-s-picks)
+  // Highlight the tab for the section in the URL (e.g. /picks#travel-picks)
   const mark = () => document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("on", a.hash === location.hash));
   window.addEventListener("hashchange", mark); mark();
 </script>
